@@ -13,7 +13,7 @@ const slugify = (text) => {
 
 async function sendSharingLiveNotif(sharingId, message, discordName) {
   const sharingDetail = await axios.get(
-    `https://showroom-admin.ikhbaldwiyan.repl.co/sharing-live/${sharingId}`
+    `https://showroom-admin.vercel.app/sharing-live/${sharingId}`
   );
 
   const data = sharingDetail.data;
