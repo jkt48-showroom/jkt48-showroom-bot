@@ -3,8 +3,9 @@ const axios = require("axios");
 const moment = require("moment");
 const getTimes = require("../utils/getTimes");
 const momentTimezone = require("moment-timezone");
+require("dotenv").config();
 
-// Discord channel for live-notification
+// Discord channel for jadwal-theater
 const webhookClientTheater = new Discord.WebhookClient({
   id: process.env.ID_THEATER_CHANNEL,
   token: process.env.TOKEN_THEATER_CHANNEL,
@@ -30,7 +31,7 @@ const getGreeting = () => {
 
 async function getNotifTheaterSchedule(image) {
   try {
-    const response = await axios.get('https://showroom-admin.vercel.app/schedules');
+    const response = await axios.get(`${process.env.SHOWROOM_ADMIN_WEB}/schedules`);
     const theaterSchedule = response.data;
 
     const embed = new Discord.EmbedBuilder()
@@ -38,7 +39,7 @@ async function getNotifTheaterSchedule(image) {
       .setColor('#23889a')
       .setImage(image)
       .addFields({ name: ' ', value: ' ------------------- ' })
-      .setURL('https://jkt48-showroom.vercel.app/theater-schedule')
+      .setURL(`${process.env.JKT48_SHOWROOM_WEB}/theater-schedule`)
       .setThumbnail('https://assets.ayobandung.com/crop/0x0:0x0/750x500/webp/photo/2023/02/02/2927366731.jpeg')
       .setTimestamp();
 
@@ -67,7 +68,7 @@ async function getNotifTheaterSchedule(image) {
       .filter((schedule) => schedule.isOnWeekSchedule)
       .forEach((schedule) => {
         const dayName = moment(schedule?.showDate).locale('id').format('dddd');
-        const url = `https://jkt48-showroom.vercel.app/theater/${slugify(schedule?.setlist?.name)}/${schedule._id}`;
+        const url = `process.env.JKT48_SHOWROOM_WEB/theater/${slugify(schedule?.setlist?.name)}/${schedule._id}`;
 
         embed.addFields(
           { name: `**${schedule?.setlist?.name}**`, value: ' ' },
@@ -117,7 +118,7 @@ async function getNotifTheaterScheduleShowroom() {
       "https://static.showroom-live.com/image/room/cover/73f495d564945090f4af7338a42ce09ffa12d35fbfa8ce35c856220bcf96c5f3_m.png?v=1683304746"
     )
     .addFields({ name: " ", value: " ------------------- " })
-    .setURL("https://jkt48-showroom.vercel.app/theater-schedule")
+    .setURL("process.env.JKT48_SHOWROOM_WEB/theater-schedule")
     .setThumbnail(
       "https://assets.ayobandung.com/crop/0x0:0x0/750x500/webp/photo/2023/02/02/2927366731.jpeg"
     )

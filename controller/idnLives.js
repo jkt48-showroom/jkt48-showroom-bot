@@ -61,12 +61,11 @@ const client = new MongoClient(process.env.MONGO_DB,
 const db = client.db("showroom");
 const collection = db.collection("idn_lives_history");
 
-// Discord channel for live-notification
+// Discord channel for idn-live-notif
 const webhookClient = new Discord.WebhookClient({
-  id: process.env.LIVE_NOTIF_CHANNEL_ID,
-  token: process.env.LIVE_NOTIF_CHANNEL_TOKEN,
+  id: process.env.IDN_LIVE_NOTIF_CHANNEL_ID,
+  token: process.env.IDN_LIVE_NOTIF_CHANNEL_TOKEN,
 });
-
 
 // Function to send Discord webhook notification
 async function sendWebhookNotification(data) {

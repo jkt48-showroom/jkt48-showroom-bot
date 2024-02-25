@@ -2,32 +2,32 @@ const Discord = require("discord.js");
 const axios = require("axios");
 const moment = require("moment");
 const momentTimezone = require("moment-timezone");
-
+require("dotenv").config();
 
 const webhookClients = {
   general: new Discord.WebhookClient({
-    id: "1092835883608199168",
-    token: "6A8do70bBQXAveFS1o7G5R1D4_rnuLDalpCJM1VllihMSNFf9GBjFjK7LVlLYW1yBo2l",
+    id: process.env.GENERAL_ID,
+    token:  process.env.GENERAL_TOKEN,
   }),
   twitter: new Discord.WebhookClient({
-    id: "1121642960140894239",
-    token: "WCc8xTDzH-oR_ajmlUTbGagXSZvXe17RsYqshjf682dOE9tU25M9jgX31aLLZUiJD7Jh",
+    id:  process.env.TWITTER_ID,
+    token: process.env.TWITTER_TOKEN,
   }),
   announcement: new Discord.WebhookClient({
-    id: "1130507690074968216",
-    token: "EoYUSXdllCzxg9M4LzsCQycTXYiWrWJ-sbKJgCz6A2TuqYz54cgwCFXaDX29p0-YYbKS",
+    id: process.env.ANNOUNCEMENT_ID,
+    token: process.env.ANNOUNCEMENT_TOKEN,
   }),
   development: new Discord.WebhookClient({
-    id: "1130771451658637352",
-    token: "omrj2_m4Bn-HnGx3MYQFBIDWUjM75WKcooJ2GoTNvNHD3YtmBxByw2utmx5x_UYW9xrE"
+    id: process.env.DEVELOPMENT_ID,
+    token: process.env.DEVELOPMENT_TOKEN
   }),
   theater: new Discord.WebhookClient({
-    id: "1106146275851771955",
-    token: "VmQ6ypkd4TpIJoQsob3_AkbkSTSmoHbNdfUvz50cLgwd7lMcaxJoZtpQjn1CYA3UeaSM"
+    id: process.env.ID_THEATER_CHANNEL,
+    token: process.env.TOKEN_THEATER_CHANNEL,
   }),
   sharing: new Discord.WebhookClient({
-    id: "1168086696668172358",
-    token: "3D1CSpUsctkpkGSNpe-OEk2_5YKDXmpMt7FPkSWEDgkeHYnvVeLX0GdB0YyWbWdgVLwr"
+    id: process.env.SHARING_LIVE_ID,
+    token: process.env.SHARING_LIVE_TOKEN,
   }),
 };
 
@@ -85,7 +85,7 @@ const getGreeting = () => {
 
 
 async function sendMessageTheaterInfo(scheduleId, type) {
-  const response = await axios.get(`https://showroom-admin.vercel.app/schedules/${scheduleId}`);
+  const response = await axios.get(`${process.env.SHOWROOM_ADMIN_WEB}/schedules/${scheduleId}`);
   const schedule = response.data;
 
 
@@ -94,7 +94,7 @@ async function sendMessageTheaterInfo(scheduleId, type) {
     return text.toLowerCase().replace(/\s+/g, "-");
   };
 
-  const url = `https://jkt48-showroom.vercel.app/theater/${slugify(schedule?.setlist?.name)}/${schedule._id}`;
+  const url = `${process.env.JKT48_SHOWROOM_WEB}/theater/${slugify(schedule?.setlist?.name)}/${schedule._id}`;
 
   const embed = new Discord.EmbedBuilder()
     .setTitle(`**${schedule?.setlist?.originalName} - ${schedule?.setlist?.name}**`)

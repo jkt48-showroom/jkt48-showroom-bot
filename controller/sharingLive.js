@@ -1,10 +1,11 @@
 const Discord = require("discord.js");
 const axios = require("axios");
 const moment = require("moment");
+require("dotenv").config();
 
 const webhookClients = new Discord.WebhookClient({
-  id: "1168086696668172358",
-  token: "3D1CSpUsctkpkGSNpe-OEk2_5YKDXmpMt7FPkSWEDgkeHYnvVeLX0GdB0YyWbWdgVLwr",
+  id: process.env.SHARING_LIVE_ID,
+  token: process.env.SHARING_LIVE_TOKEN,
 });
 
 const slugify = (text) => {
@@ -13,12 +14,12 @@ const slugify = (text) => {
 
 async function sendSharingLiveNotif(sharingId, message, discordName) {
   const sharingDetail = await axios.get(
-    `https://showroom-admin.vercel.app/sharing-live/${sharingId}`
+    `${process.env.SHOWROOM_ADMIN_WEB}/sharing-live/${sharingId}`
   );
 
   const data = sharingDetail.data;
 
-  const url = `https://jkt48-showroom-git-feat-sharing-live-ikhbaldwiyan.vercel.app/sharing/${slugify(
+  const url = `${process.env.SHARING_LIVE_FEATURE_WEB}/sharing/${slugify(
     data?.schedule_id?.setlist?.name
   )}/${data?.schedule_id?._id}`;
 

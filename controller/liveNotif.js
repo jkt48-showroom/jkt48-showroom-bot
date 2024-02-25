@@ -18,16 +18,16 @@ const client = new MongoClient(process.env.MONGO_DB,
 const db = client.db("showroom");
 const collection = db.collection("live_ids");
 
-// Discord channel for live-notification
+// Discord channel for sr-live-notif
 const webhookClient = new Discord.WebhookClient({
-  id: process.env.ID,
-  token: process.env.TOKEN,
+  id: process.env.LIVE_SHOWROOM_ID,
+  token: process.env.LIVE_SHOWROOM_TOKEN,
 });
 
 async function getTodayTheaterSchedule() {
   try {
     const response = await axios.get(
-      "https://showroom-admin.vercel.app/schedules/today"
+      `${process.env.SHOWROOM_ADMIN_WEB}/schedules/today`
     );
 
     return response.data || null; // Return null if no schedule matches today's date
@@ -58,7 +58,7 @@ async function sendWebhookNotification(data, liveTime) {
       image = data.image?.replace("_s.jpeg", "_l.jpeg");
     }
 
-    const link = `https://jkt48-showroom.vercel.app/room/${data.room_url_key}/${data.room_id}?type=live-notif`;
+    const link = `${process.env.JKT48_SHOWROOM_WEB}/room/${data.room_url_key}/${data.room_id}?type=live-notif`;
 
     const description = new Discord.EmbedBuilder()
       .setTitle(title)

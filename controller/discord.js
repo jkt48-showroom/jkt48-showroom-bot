@@ -33,7 +33,7 @@ function sendWebhookNotification(liveInfo, liveTime, type = "live") {
   const name = liveInfo.url_key
     ? liveInfo.url_key.replace("JKT48_", "") + " JKT48"
     : liveInfo.room_url_key.replace("JKT48_", "") + " JKT48";
-  const link = `https://jkt48-showroom.vercel.app/room/${liveInfo.url_key ?? liveInfo.room_url_key
+  const link = `${process.env.JKT48_SHOWROOM_WEB}/room/${liveInfo.url_key ?? liveInfo.room_url_key
     }/${liveInfo.id ?? liveInfo.room_id}`;
 
   const description = new Discord.EmbedBuilder()
@@ -163,7 +163,7 @@ async function getNotifTheaterSchedule() {
       "https://static.showroom-live.com/image/room/cover/73f495d564945090f4af7338a42ce09ffa12d35fbfa8ce35c856220bcf96c5f3_m.png?v=1683304746"
     )
     .addFields({ name: " ", value: " ------------------- " })
-    .setURL("https://jkt48-showroom.vercel.app/theater-schedule")
+    .setURL(`${process.env.JKT48_SHOWROOM_WEB}/theater-schedule`)
     .setThumbnail(
       "https://assets.ayobandung.com/crop/0x0:0x0/750x500/webp/photo/2023/02/02/2927366731.jpeg"
     )
