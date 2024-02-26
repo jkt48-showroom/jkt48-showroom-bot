@@ -5,11 +5,12 @@ const Bot = require('../controller/messageBot');
 const LiveNotif = require('../controller/liveNotif');
 const SharingLive = require('../controller/sharingLive');
 const router = express.Router();
+const middleware = require('../utils/jwtMiddleware');
 
-router.get('/notification', Discord.getLiveNotification)
-router.post('/theater-notif', Schedule.getTheaterNotification)
-router.get('/theater-showroom', Schedule.getTheaterShowroom)
-router.post('/message-bot', Bot.getMessageBot)
+router.get('/notification', middleware, Discord.getLiveNotification)
+router.post('/theater-notif', middleware, Schedule.getTheaterNotification)
+router.get('/theater-showroom', middleware, Schedule.getTheaterShowroom)
+router.post('/message-bot', middleware, Bot.getMessageBot)
 router.get('/live-notif-bot', LiveNotif.getLiveNotification)
 router.post('/sharing-live', SharingLive.sendNotifDiscord)
 
