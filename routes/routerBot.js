@@ -7,7 +7,7 @@ const SharingLive = require('../controller/sharingLive');
 const router = express.Router();
 const middleware = require('../utils/jwtMiddleware');
 
-router.get('/notification', middleware, Discord.getLiveNotification)
+router.get('/notification', Discord.getLiveNotification)
 router.post('/theater-notif', middleware, Schedule.getTheaterNotification)
 router.get('/theater-showroom', middleware, Schedule.getTheaterShowroom)
 router.post('/message-bot', middleware, Bot.getMessageBot)
