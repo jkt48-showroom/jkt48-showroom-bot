@@ -6,6 +6,7 @@ const { MongoClient } = require("mongodb");
 const { bgCyanBright, redBright, green } = require("colorette");
 const IDNLiveNotif = require("./idnLives");
 require("dotenv").config();
+const moment = require('moment-timezone');
 
 const client = new MongoClient(process.env.MONGO_DB,
   {
@@ -66,7 +67,7 @@ async function sendWebhookNotification(data, liveTime) {
       .addFields(
         {
           name: "Live Start:",
-          value: "⏰ " + getTimes(liveTime),
+          value: "⏰ " + moment.utc(data.liveTime).tz('Asia/Jakarta').locale('id').format('dddd, DD MMMM HH:mm'),
         },
       )
       .setImage(image)
