@@ -68,7 +68,7 @@ async function getNotifTheaterSchedule(image) {
       .filter((schedule) => schedule.isOnWeekSchedule)
       .forEach((schedule) => {
         const dayName = moment(schedule?.showDate).locale('id').format('dddd');
-        const url = `process.env.JKT48_SHOWROOM_WEB/theater/${slugify(schedule?.setlist?.name)}/${schedule._id}`;
+        const url = `${process.env.JKT48_SHOWROOM_WEB}/theater/${slugify(schedule?.setlist?.name)}/${schedule._id}`;
 
         embed.addFields(
           { name: `**${schedule?.setlist?.name}**`, value: ' ' },
