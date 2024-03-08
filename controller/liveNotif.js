@@ -3,17 +3,15 @@ const axios = require("axios");
 const cron = require("node-cron");
 const getTimes = require("../utils/getTimes");
 const { MongoClient } = require("mongodb");
-const { bgCyanBright, redBright, green } = require("colorette");
+const { bgCyanBright, redBright, green, blueBright } = require("colorette");
 const IDNLiveNotif = require("./idnLives");
 require("dotenv").config();
-const moment = require('moment-timezone');
+const moment = require("moment-timezone");
 
-const client = new MongoClient(process.env.MONGO_DB,
-  {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  }
-);
+const client = new MongoClient(process.env.MONGO_DB, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 // Define a model for liveIds
 const db = client.db("showroom");
@@ -38,12 +36,11 @@ async function getTodayTheaterSchedule() {
   }
 }
 
-
 // Function to send Discord webhook notification
 async function sendWebhookNotification(data, liveTime) {
   try {
     const todayShow = await getTodayTheaterSchedule();
-    const isPremiumLive = data?.premium_room_type === 1
+    const isPremiumLive = data?.premium_room_type === 1;
 
     let name;
     let title;
@@ -64,31 +61,31 @@ async function sendWebhookNotification(data, liveTime) {
     const description = new Discord.EmbedBuilder()
       .setTitle(title)
       .setURL(link)
-      .addFields(
-        {
-          name: "Live Start:",
-          value: "⏰ " + moment.utc(data.liveTime).tz('Asia/Jakarta').locale('id').format('dddd, DD MMMM HH:mm'),
-        },
-      )
+      .addFields({
+        name: "Live Start:",
+        value:
+          "⏰ " +
+          moment
+            .utc(data.liveTime)
+            .tz("Asia/Jakarta")
+            .locale("id")
+            .format("dddd, DD MMMM HH:mm"),
+      })
       .setImage(image)
       .setColor("#23889a")
       .setTimestamp();
 
     if (todayShow && isPremiumLive) {
-      description.addFields(
-        {
-          name: "Setlist:",
-          value: `${todayShow.setlist.originalName} - ${todayShow.setlist.name} `,
-
-        });
+      description.addFields({
+        name: "Setlist:",
+        value: `${todayShow.setlist.originalName} - ${todayShow.setlist.name} `,
+      });
 
       if (todayShow?.isBirthdayShow) {
-        description.addFields(
-          {
-            name: "Birthday:",
-            value: `${todayShow.birthdayMember.stage_name}`,
-
-          });
+        description.addFields({
+          name: "Birthday:",
+          value: `${todayShow.birthdayMember.stage_name}`,
+        });
       }
     }
 
@@ -103,19 +100,19 @@ async function sendWebhookNotification(data, liveTime) {
         value: `[Here](https://www.showroom-live.com/r/${data.room_url_key})`,
         inline: true,
       }
-    )
-
+    );
 
     if (data.party_live_status === 1) {
       description.addFields({
         name: "Collab",
-        value: ``
-      })
+        value: ``,
+      });
     }
 
     webhookClient.send({
       username: "JKT48 SHOWROOM BOT",
-      avatarURL: "https://media.discordapp.net/attachments/1108380195175551047/1134155015242666015/Flag_Fix.png?width=610&height=607",
+      avatarURL:
+        "https://media.discordapp.net/attachments/1108380195175551047/1134155015242666015/Flag_Fix.png?width=610&height=607",
       embeds: [description],
     });
   } catch (error) {
@@ -187,16 +184,27 @@ async function getLiveInfo(rooms) {
 }
 
 async function sendTodaySchedule() {
-  const todayShow = await getTodayTheaterSchedule();
+  try {
+    const todayShow = await getTodayTheaterSchedule();
 
-
-  if (todayShow) {
-    await axios.post("https://jkt48-showroom-bot.ikhbaldwiyan.repl.co/discord/message-bot", {
-      message: "",
-      messageType: "schedule",
-      scheduleId: todayShow._id,
-      type: "theater",
-    })
+    if (todayShow) {
+      await axios.post(
+        `${process.env.DISCORD_BOT_WEB}/discord/message-bot`,
+        {
+          message: "",
+          messageType: "schedule",
+          scheduleId: todayShow._id,
+          type: "theater",
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.MESSAGE_BOT_TOKEN}`,
+          },
+        }
+      );
+    }
+  } catch (error) {
+    console.log("error sending today theater", error)
   }
 }
 
@@ -232,10 +240,13 @@ const DiscordApi = {
         await getLiveInfo(roomLives);
         await IDNLiveNotif.sendDiscordNotif();
         getScheduledJobTime();
-      });
 
-      cronJob = cron.schedule("0 8 * * *", async () => {
-        await sendTodaySchedule()
+        // send today schedule
+        const now = new Date();
+        if (now.getHours() === 12 && now.getMinutes() === 30) {
+          await sendTodaySchedule();
+          console.log(blueBright("Today schedule sent to discord"));
+        }
       });
 
       if (roomLives?.length > 0) {
@@ -252,7 +263,7 @@ const DiscordApi = {
         console.log(redBright("No one member lives"));
       }
     } catch (error) {
-      console.log(error)
+      console.log(error);
       res.status(500).send("Error sending live notification");
     }
   },
