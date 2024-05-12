@@ -3,7 +3,13 @@ const axios = require("axios");
 const cron = require("node-cron");
 const getTimes = require("../utils/getTimes");
 const { MongoClient } = require("mongodb");
-const { bgCyanBright, redBright, green, blueBright, red } = require("colorette");
+const {
+  bgCyanBright,
+  redBright,
+  green,
+  blueBright,
+  red
+} = require("colorette");
 const IDNLiveNotif = require("./idnLives");
 require("dotenv").config();
 const moment = require("moment-timezone");
@@ -38,20 +44,35 @@ async function getTodayTheaterSchedule() {
 
 async function sendMobileFirebaseNotif(data) {
   try {
-    const memberName = data.room_url_key.replace("JKT48_", "");
+    let name;
+    let body;
+    let image;
+
+    const todayShow = await getTodayTheaterSchedule();
+    const isPremiumLive = data?.premium_room_type === 1;
+
+    if (isPremiumLive) {
+      name = "JKT48 Official";
+      body = `${name} live show ${todayShow?.setlist?.name} Premium Live!`;
+      image = todayShow?.setlist?.image;
+    } else {
+      name = data.room_url_key.replace("JKT48_", "");
+      body = `${name} lagi live showroom nih!`;
+      image = data.image?.replace("_s.jpeg", "_l.jpeg");
+    }
 
     const payload = {
       to: "/topics/showroom",
       notification: {
         title: "JKT48 SHOWROOM",
-        body: `${memberName} lagi live showroom nih`,
+        body: body,
         mutable_content: true,
         sound: "Tri-tone",
         icon: "https://res.cloudinary.com/dkkagbzl4/image/upload/v1715448389/ioc8l1puv69qn7nzc2e9.png",
-        image: data.image?.replace("_s.jpeg", "_l.jpeg")
+        image: image
       },
       data: {
-        name: memberName,
+        name: name,
         type: "Showroom",
         image: data?.image_square
       }
@@ -64,10 +85,10 @@ async function sendMobileFirebaseNotif(data) {
       }
     });
 
-    return console.log(green(`Sending mobile notif ${memberName} success`)); 
+    return console.log(green(`Sending mobile notif ${name} success`));
   } catch (error) {
-    console.log(error)
-    console.log(red(`Send mobile notif failed`))
+    console.log(error);
+    console.log(red(`Send mobile notif failed`));
   }
 }
 
@@ -269,7 +290,27 @@ const DiscordApi = {
         cronJob?.destroy();
       }
       const roomLives = await getMemberLiveData();
-
+      sendMobileFirebaseNotif({
+        room_url_key: "officialJKT48",
+        official_lv: 1,
+        follower_num: 509613,
+        started_at: 1715514419,
+        live_id: 19631832,
+        is_follow: false,
+        streaming_url_list: [],
+        live_type: 3,
+        tags: [],
+        image:
+          "https://static.showroom-live.com/image/room/cover/73f495d564945090f4af7338a42ce09ffa12d35fbfa8ce35c856220bcf96c5f3_s.png?v=1715261567",
+        view_num: 111,
+        genre_id: 102,
+        main_name: "JKT48 Official SHOWROOM",
+        liver_theme_title: "",
+        premium_room_type: 1,
+        cell_type: 100,
+        bcsvr_key: "12b8ed8:AEup8ZbE",
+        room_id: 332503
+      });
       // Set up new cron job
       cronJob = cron.schedule("*/1 * * * *", async () => {
         const roomLives = await getMemberLiveData();
