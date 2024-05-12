@@ -100,8 +100,9 @@ async function sendMobileFirebaseNotif(data) {
       },
       data: {
         name: memberName,
-        type: "Showroom",
-        stream: data
+        type: "IDN",
+        profile: data,
+        screen: "IDNStream"
       }
     };
 

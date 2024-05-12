@@ -81,10 +81,7 @@ async function sendMobileFirebaseNotif(data) {
             name: todayShow?.setlist?.name
           }
         },
-        profile: {
-          room_id: data.room_id,
-          view_num: data.view_num
-        }
+        profile: data
       }
     };
 
@@ -300,27 +297,6 @@ const DiscordApi = {
         cronJob?.destroy();
       }
       const roomLives = await getMemberLiveData();
-      sendMobileFirebaseNotif({
-        room_url_key: "officialJKT48",
-        official_lv: 1,
-        follower_num: 509613,
-        started_at: 1715514419,
-        live_id: 19631832,
-        is_follow: false,
-        streaming_url_list: [],
-        live_type: 3,
-        tags: [],
-        image:
-          "https://static.showroom-live.com/image/room/cover/73f495d564945090f4af7338a42ce09ffa12d35fbfa8ce35c856220bcf96c5f3_s.png?v=1715261567",
-        view_num: 111,
-        genre_id: 102,
-        main_name: "JKT48 Official SHOWROOM",
-        liver_theme_title: "",
-        premium_room_type: 1,
-        cell_type: 100,
-        bcsvr_key: "12b8ed8:AEup8ZbE",
-        room_id: 332503
-      });
       // Set up new cron job
       cronJob = cron.schedule("*/1 * * * *", async () => {
         const roomLives = await getMemberLiveData();
