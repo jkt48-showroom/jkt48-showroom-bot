@@ -84,6 +84,41 @@ const webhookClient = new Discord.WebhookClient({
   token: process.env.IDN_LIVE_NOTIF_CHANNEL_TOKEN,
 });
 
+async function sendMobileFirebaseNotif(data) {
+  try {
+    const memberName = data.user.name;
+
+    const payload = {
+      to: "/topics/showroom",
+      notification: {
+        title: "JKT48 SHOWROOM",
+        body: `${memberName} lagi IDN Live nih`,
+        mutable_content: true,
+        sound: "Tri-tone",
+        icon: "https://res.cloudinary.com/dkkagbzl4/image/upload/v1715448389/ioc8l1puv69qn7nzc2e9.png",
+        image: data.image
+      },
+      data: {
+        name: memberName,
+        type: "Showroom",
+        stream: data
+      }
+    };
+
+    axios.post("https://fcm.googleapis.com/fcm/send", payload, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `key=${process.env.FIREBASE_MESSAGE_KEY}`
+      }
+    });
+
+    return console.log(green(`Sending mobile IDN notif ${memberName} success`)); 
+  } catch (error) {
+    console.log(error)
+    console.log(red(`Send mobile IDN notif failed`))
+  }
+}
+
 // Function to send Discord webhook notification
 async function sendWebhookNotification(data) {
   try {
@@ -148,6 +183,7 @@ async function getLiveInfo(rooms) {
         );
       } else {
         // send notification discord and insert the live id into the database
+        sendMobileFirebaseNotif(member);
         sendWebhookNotification(member);
         await collection.insertOne({
           room_id: member.user.id,

@@ -234,8 +234,8 @@ async function getLiveInfo(rooms) {
         );
       } else {
         // send notification discord and insert the live id into the database
-        sendWebhookNotification(member, liveTime);
         sendMobileFirebaseNotif(member);
+        sendWebhookNotification(member, liveTime);
         await collection.insertOne({
           roomId: member.room_id ?? member.id,
           name,
