@@ -73,8 +73,18 @@ async function sendMobileFirebaseNotif(data) {
       },
       data: {
         name: name,
-        type: "Showroom",
-        image: data?.image_square
+        type: isPremiumLive ? "Premium Live" : "Showroom",
+        screen: isPremiumLive ? "PremiumLive" : "LiveStream",
+        room_id: data.room_id,
+        theater: {
+          setlist: {
+            name: todayShow?.setlist?.name
+          }
+        },
+        profile: {
+          room_id: data.room_id,
+          view_num: data.view_num
+        }
       }
     };
 
