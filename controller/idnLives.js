@@ -1,8 +1,9 @@
 const axios = require("axios");
 const { MongoClient } = require("mongodb");
-const { bgCyanBright, redBright, green } = require("colorette");
+const { bgCyanBright, redBright, green, red } = require("colorette");
 const Discord = require("discord.js");
 const moment = require('moment-timezone');
+const sendNotifMobile = require("../utils/sendNotifMobile");
 require("dotenv").config();
 
 let idnUsernames = [
@@ -91,7 +92,7 @@ async function sendMobileFirebaseNotif(data) {
     const payload = {
       to: "/topics/showroom",
       notification: {
-        title: "JKT48 SHOWROOM",
+        title: `IDN Live: ${data.title}`,
         body: `${memberName} lagi IDN Live nih`,
         mutable_content: true,
         sound: "Tri-tone",
@@ -106,12 +107,7 @@ async function sendMobileFirebaseNotif(data) {
       }
     };
 
-    axios.post("https://fcm.googleapis.com/fcm/send", payload, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `key=${process.env.FIREBASE_MESSAGE_KEY}`
-      }
-    });
+    sendNotifMobile(payload)
 
     return console.log(green(`Sending mobile IDN notif ${memberName} success`)); 
   } catch (error) {

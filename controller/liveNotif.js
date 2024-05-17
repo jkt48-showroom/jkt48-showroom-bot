@@ -13,6 +13,7 @@ const {
 const IDNLiveNotif = require("./idnLives");
 require("dotenv").config();
 const moment = require("moment-timezone");
+const sendNotifMobile = require("../utils/sendNotifMobile");
 
 const client = new MongoClient(process.env.MONGO_DB, {
   useNewUrlParser: true,
@@ -85,12 +86,7 @@ async function sendMobileFirebaseNotif(data) {
       }
     };
 
-    axios.post("https://fcm.googleapis.com/fcm/send", payload, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `key=${process.env.FIREBASE_MESSAGE_KEY}`
-      }
-    });
+    sendNotifMobile(payload)
 
     return console.log(green(`Sending mobile notif ${name} success`));
   } catch (error) {
@@ -128,11 +124,7 @@ async function sendWebhookNotification(data, liveTime) {
         name: "Live Start:",
         value:
           "⏰ " +
-          moment
-            .utc(data.liveTime)
-            .tz("Asia/Jakarta")
-            .locale("id")
-            .format("dddd, DD MMMM HH:mm")
+          getTimes(liveTime, true)
       })
       .setImage(image)
       .setColor("#23889a")
