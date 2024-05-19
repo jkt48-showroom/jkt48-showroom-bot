@@ -1,8 +1,9 @@
 const axios = require("axios");
 const { MongoClient } = require("mongodb");
-const { bgCyanBright, redBright, green } = require("colorette");
+const { bgCyanBright, redBright, green, red } = require("colorette");
 const Discord = require("discord.js");
 const moment = require('moment-timezone');
+const sendNotifMobile = require("../utils/sendNotifMobile");
 require("dotenv").config();
 
 let idnUsernames = [
@@ -84,6 +85,37 @@ const webhookClient = new Discord.WebhookClient({
   token: process.env.IDN_LIVE_NOTIF_CHANNEL_TOKEN,
 });
 
+async function sendMobileFirebaseNotif(data) {
+  try {
+    const memberName = data.user.name;
+
+    const payload = {
+      to: "/topics/showroom",
+      notification: {
+        title: `IDN Live: ${data.title}`,
+        body: `${memberName} lagi IDN Live nih`,
+        mutable_content: true,
+        sound: "Tri-tone",
+        icon: "https://res.cloudinary.com/dkkagbzl4/image/upload/v1715448389/ioc8l1puv69qn7nzc2e9.png",
+        image: data.image
+      },
+      data: {
+        name: memberName,
+        type: "IDN",
+        profile: data,
+        screen: "IDNStream"
+      }
+    };
+
+    sendNotifMobile(payload)
+
+    return console.log(green(`Sending mobile IDN notif ${memberName} success`)); 
+  } catch (error) {
+    console.log(error)
+    console.log(red(`Send mobile IDN notif failed`))
+  }
+}
+
 // Function to send Discord webhook notification
 async function sendWebhookNotification(data) {
   try {
@@ -148,6 +180,7 @@ async function getLiveInfo(rooms) {
         );
       } else {
         // send notification discord and insert the live id into the database
+        sendMobileFirebaseNotif(member);
         sendWebhookNotification(member);
         await collection.insertOne({
           room_id: member.user.id,

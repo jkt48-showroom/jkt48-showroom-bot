@@ -2,15 +2,16 @@ const Discord = require("discord.js");
 const axios = require("axios");
 const moment = require("moment");
 const momentTimezone = require("moment-timezone");
+const sendNotifMobile = require("../utils/sendNotifMobile");
 require("dotenv").config();
 
 const webhookClients = {
   general: new Discord.WebhookClient({
     id: process.env.GENERAL_ID,
-    token:  process.env.GENERAL_TOKEN,
+    token: process.env.GENERAL_TOKEN,
   }),
   twitter: new Discord.WebhookClient({
-    id:  process.env.TWITTER_ID,
+    id: process.env.TWITTER_ID,
     token: process.env.TWITTER_TOKEN,
   }),
   announcement: new Discord.WebhookClient({
@@ -83,6 +84,33 @@ const getGreeting = () => {
   }
 };
 
+async function sendScheduleNotifAndroid(schedule) {
+  const payload = {
+    to: "/topics/showroom",
+    notification: {
+      title: "Jadwal Theater",
+      body: `Hari ini ada show ${schedule?.setlist?.name} jam ${schedule.showTime} WIB`,
+      mutable_content: true,
+      sound: "Tri-tone",
+      icon: "https://res.cloudinary.com/dkkagbzl4/image/upload/v1715448389/ioc8l1puv69qn7nzc2e9.png",
+      image: schedule?.setlist?.image,
+    },
+    data: {
+      name: schedule?.setlist?.name,
+      type: "Schedule",
+      image: schedule?.setlist?.image,
+      screen: "ScheduleDetail",
+      schedule_id: schedule._id,
+      setlist: {
+        name: schedule?.setlist?.name,
+      },
+    },
+  };
+
+
+  sendNotifMobile(payload);
+}
+
 
 async function sendMessageTheaterInfo(scheduleId, type) {
   const response = await axios.get(`${process.env.SHOWROOM_ADMIN_WEB}/schedules/${scheduleId}`);
@@ -135,6 +163,7 @@ async function sendMessageTheaterInfo(scheduleId, type) {
 
 
   if (type in webhookClients) {
+    sendScheduleNotifAndroid(schedule);
     webhookClients[type].send(customMessage);
   } else {
     console.log("Invalid webhook type:", type);

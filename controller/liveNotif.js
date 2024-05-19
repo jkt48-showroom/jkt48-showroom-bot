@@ -3,14 +3,21 @@ const axios = require("axios");
 const cron = require("node-cron");
 const getTimes = require("../utils/getTimes");
 const { MongoClient } = require("mongodb");
-const { bgCyanBright, redBright, green, blueBright } = require("colorette");
+const {
+  bgCyanBright,
+  redBright,
+  green,
+  blueBright,
+  red
+} = require("colorette");
 const IDNLiveNotif = require("./idnLives");
 require("dotenv").config();
 const moment = require("moment-timezone");
+const sendNotifMobile = require("../utils/sendNotifMobile");
 
 const client = new MongoClient(process.env.MONGO_DB, {
   useNewUrlParser: true,
-  useUnifiedTopology: true,
+  useUnifiedTopology: true
 });
 
 // Define a model for liveIds
@@ -20,7 +27,7 @@ const collection = db.collection("live_ids");
 // Discord channel for sr-live-notif
 const webhookClient = new Discord.WebhookClient({
   id: process.env.LIVE_SHOWROOM_ID,
-  token: process.env.LIVE_SHOWROOM_TOKEN,
+  token: process.env.LIVE_SHOWROOM_TOKEN
 });
 
 async function getTodayTheaterSchedule() {
@@ -33,6 +40,58 @@ async function getTodayTheaterSchedule() {
   } catch (error) {
     console.error("Error fetching theater schedules:", error);
     return null;
+  }
+}
+
+async function sendMobileFirebaseNotif(data) {
+  try {
+    let name;
+    let body;
+    let image;
+
+    const todayShow = await getTodayTheaterSchedule();
+    const isPremiumLive = data?.premium_room_type === 1;
+
+    if (isPremiumLive) {
+      name = "JKT48 Official";
+      body = `${name} live show ${todayShow?.setlist?.name} Premium Live!`;
+      image = todayShow?.setlist?.image;
+    } else {
+      name = data.room_url_key.replace("JKT48_", "");
+      body = `${name} lagi live showroom nih!`;
+      image = data.image?.replace("_s.jpeg", "_l.jpeg");
+    }
+
+    const payload = {
+      to: "/topics/showroom",
+      notification: {
+        title: "JKT48 SHOWROOM",
+        body: body,
+        mutable_content: true,
+        sound: "Tri-tone",
+        icon: "https://res.cloudinary.com/dkkagbzl4/image/upload/v1715448389/ioc8l1puv69qn7nzc2e9.png",
+        image: image
+      },
+      data: {
+        name: name,
+        type: isPremiumLive ? "Premium Live" : "Showroom",
+        screen: isPremiumLive ? "PremiumLive" : "LiveStream",
+        room_id: data.room_id,
+        theater: {
+          setlist: {
+            name: todayShow?.setlist?.name
+          }
+        },
+        profile: data
+      }
+    };
+
+    sendNotifMobile(payload)
+
+    return console.log(green(`Sending mobile notif ${name} success`));
+  } catch (error) {
+    console.log(error);
+    console.log(red(`Send mobile notif failed`));
   }
 }
 
@@ -65,11 +124,7 @@ async function sendWebhookNotification(data, liveTime) {
         name: "Live Start:",
         value:
           "⏰ " +
-          moment
-            .utc(data.liveTime)
-            .tz("Asia/Jakarta")
-            .locale("id")
-            .format("dddd, DD MMMM HH:mm"),
+          getTimes(liveTime, true)
       })
       .setImage(image)
       .setColor("#23889a")
@@ -78,13 +133,13 @@ async function sendWebhookNotification(data, liveTime) {
     if (todayShow && isPremiumLive) {
       description.addFields({
         name: "Setlist:",
-        value: `${todayShow.setlist.originalName} - ${todayShow.setlist.name} `,
+        value: `${todayShow.setlist.originalName} - ${todayShow.setlist.name} `
       });
 
       if (todayShow?.isBirthdayShow) {
         description.addFields({
           name: "Birthday:",
-          value: `${todayShow.birthdayMember.stage_name}`,
+          value: `${todayShow.birthdayMember.stage_name}`
         });
       }
     }
@@ -93,19 +148,19 @@ async function sendWebhookNotification(data, liveTime) {
       {
         name: "Watch on JKT48 Showroom:",
         value: `[Here](${link})`,
-        inline: true,
+        inline: true
       },
       {
         name: "Watch on Showroom:",
         value: `[Here](https://www.showroom-live.com/r/${data.room_url_key})`,
-        inline: true,
+        inline: true
       }
     );
 
     if (data.party_live_status === 1) {
       description.addFields({
         name: "Collab",
-        value: ``,
+        value: ``
       });
     }
 
@@ -113,7 +168,7 @@ async function sendWebhookNotification(data, liveTime) {
       username: "JKT48 SHOWROOM BOT",
       avatarURL:
         "https://media.discordapp.net/attachments/1108380195175551047/1134155015242666015/Flag_Fix.png?width=610&height=607",
-      embeds: [description],
+      embeds: [description]
     });
   } catch (error) {
     console.error("Error sending webhook notification:", error);
@@ -168,12 +223,13 @@ async function getLiveInfo(rooms) {
         );
       } else {
         // send notification discord and insert the live id into the database
+        sendMobileFirebaseNotif(member);
         sendWebhookNotification(member, liveTime);
         await collection.insertOne({
           roomId: member.room_id ?? member.id,
           name,
           live_id: liveId,
-          date: getTimes(liveTime, true),
+          date: getTimes(liveTime, true)
         });
         console.log(green(`Member ${name} is Live Sending notification...`));
       }
@@ -194,17 +250,17 @@ async function sendTodaySchedule() {
           message: "",
           messageType: "schedule",
           scheduleId: todayShow._id,
-          type: "theater",
+          type: "theater"
         },
         {
           headers: {
-            Authorization: `Bearer ${process.env.MESSAGE_BOT_TOKEN}`,
-          },
+            Authorization: `Bearer ${process.env.MESSAGE_BOT_TOKEN}`
+          }
         }
       );
     }
   } catch (error) {
-    console.log("error sending today theater", error)
+    console.log("error sending today theater", error);
   }
 }
 
@@ -216,7 +272,7 @@ function getScheduledJobTime() {
     day: "numeric",
     hour: "numeric",
     minute: "numeric",
-    second: "numeric",
+    second: "numeric"
   };
   let formattedDate = now.toLocaleString("id-ID", options);
 
@@ -233,7 +289,6 @@ const DiscordApi = {
         cronJob?.destroy();
       }
       const roomLives = await getMemberLiveData();
-
       // Set up new cron job
       cronJob = cron.schedule("*/1 * * * *", async () => {
         const roomLives = await getMemberLiveData();
@@ -254,11 +309,11 @@ const DiscordApi = {
 
         res.send({
           message: "Live notification sent!",
-          data: roomNameData,
+          data: roomNameData
         });
       } else {
         res.send({
-          message: "No one member lives",
+          message: "No one member lives"
         });
         console.log(redBright("No one member lives"));
       }
@@ -266,7 +321,7 @@ const DiscordApi = {
       console.log(error);
       res.status(500).send("Error sending live notification");
     }
-  },
+  }
 };
 
 module.exports = DiscordApi;
