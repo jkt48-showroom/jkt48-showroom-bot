@@ -96,7 +96,7 @@ const webhookClient = new Discord.WebhookClient({
 async function sendMobileFirebaseNotif(data) {
   try {
     const memberName =
-      data.user.name === "JKT48"
+      data.user.name === "jkt48-official" ? data.user.name : data.user.name.replace("JKT48", "") === "JKT48"
         ? data.user.name
         : data.user.name.replace("JKT48", "");
 
