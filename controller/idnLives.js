@@ -87,7 +87,7 @@ const webhookClient = new Discord.WebhookClient({
 
 async function sendMobileFirebaseNotif(data) {
   try {
-    const memberName = data.user.name;
+    const memberName = data.user.name === "jkt48-official" ? data.user.name : data.user.name.replace("JKT48", "");
 
     const payload = {
       to: "/topics/showroom",
@@ -168,8 +168,6 @@ async function getLiveInfo(rooms) {
     const liveId = member.slug;
     const liveDatabase = await collection.find().toArray();
     const liveIds = liveDatabase.map((obj) => obj.live_id);
-
-    console.log(rooms);
 
     if (rooms.length) {
       if (liveIds.includes(liveId)) {

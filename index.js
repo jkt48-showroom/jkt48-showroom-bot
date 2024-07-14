@@ -8,7 +8,7 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static('image'));
 
-app.listen(3000, () => {
+app.listen(4000, () => {
   console.log('server started');
 });
 

@@ -187,9 +187,7 @@ async function getMemberLiveData() {
   // Find Member Live
   for (let i = 0; i < data.length; i++) {
     const index = data[i];
-    if (index.genre_name === "Idol") {
-      onLive.push(index);
-    }
+    onLive.push(index);
   }
 
   // Store member lives data
@@ -213,6 +211,7 @@ async function getLiveInfo(rooms) {
     const liveId = member.live_id;
     const liveDatabase = await collection.find().toArray();
     const liveIds = liveDatabase.map((obj) => obj.live_id);
+    const indoDate = moment.unix(liveTime).tz('Asia/Jakarta').format('YYYY-MM-DD HH:mm:ss');
 
     name = member.room_url_key.replace("JKT48_", "") + " JKT48";
 
@@ -225,42 +224,18 @@ async function getLiveInfo(rooms) {
         // send notification discord and insert the live id into the database
         sendMobileFirebaseNotif(member);
         sendWebhookNotification(member, liveTime);
+
         await collection.insertOne({
           roomId: member.room_id ?? member.id,
           name,
           live_id: liveId,
-          date: getTimes(liveTime, true)
+          date: indoDate
         });
         console.log(green(`Member ${name} is Live Sending notification...`));
       }
     } else {
       console.log(redBright("No one member lives"));
     }
-  }
-}
-
-async function sendTodaySchedule() {
-  try {
-    const todayShow = await getTodayTheaterSchedule();
-
-    if (todayShow) {
-      await axios.post(
-        `${process.env.DISCORD_BOT_WEB}/discord/message-bot`,
-        {
-          message: "",
-          messageType: "schedule",
-          scheduleId: todayShow._id,
-          type: "theater"
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.MESSAGE_BOT_TOKEN}`
-          }
-        }
-      );
-    }
-  } catch (error) {
-    console.log("error sending today theater", error);
   }
 }
 
@@ -289,20 +264,15 @@ const DiscordApi = {
         cronJob?.destroy();
       }
       const roomLives = await getMemberLiveData();
+      
       // Set up new cron job
-      cronJob = cron.schedule("*/1 * * * *", async () => {
+      cronJob = cron.schedule("*/30 * * * * *", async () => {
         const roomLives = await getMemberLiveData();
         await getLiveInfo(roomLives);
         await IDNLiveNotif.sendDiscordNotif();
         getScheduledJobTime();
-
-        // send today schedule
-        const now = new Date();
-        if (now.getHours() === 12 && now.getMinutes() === 30) {
-          await sendTodaySchedule();
-          console.log(blueBright("Today schedule sent to discord"));
-        }
       });
+
 
       if (roomLives?.length > 0) {
         const roomNameData = roomLives.map((member) => member.main_name);
