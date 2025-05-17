@@ -86,13 +86,10 @@ const getGreeting = () => {
 
 async function sendScheduleNotifAndroid(schedule) {
   const payload = {
-    to: "/topics/showroom",
+    topic: "showroom",
     notification: {
       title: "Jadwal Theater",
-      body: `Hari ini ada show ${schedule?.setlist?.name} jam ${schedule.showTime} WIB`,
-      mutable_content: true,
-      sound: "Tri-tone",
-      icon: "https://res.cloudinary.com/dkkagbzl4/image/upload/v1715448389/ioc8l1puv69qn7nzc2e9.png",
+      body: `Hari ini ada show ${schedule?.setlist?.name} ${schedule.isBirthdayShow ? `Spesial Birthday ${schedule?.birthdayMember?.name}` : "" } jam ${schedule.showTime} WIB`,
       image: schedule?.setlist?.image,
     },
     data: {
@@ -101,10 +98,20 @@ async function sendScheduleNotifAndroid(schedule) {
       image: schedule?.setlist?.image,
       screen: "ScheduleDetail",
       schedule_id: schedule._id,
-      setlist: {
-        name: schedule?.setlist?.name,
+    },
+    android: {
+      notification: {
+        sound: "Tri-tone",
+        icon: "https://res.cloudinary.com/dkkagbzl4/image/upload/v1715448389/ioc8l1puv69qn7nzc2e9.png",
       },
     },
+    "apns": {
+      "payload": {
+        "aps": {
+          "category" : "Theater Schedule"
+        }
+      }
+    }
   };
 
 
@@ -142,7 +149,7 @@ async function sendMessageTheaterInfo(scheduleId, type) {
 
   if (schedule?.isBirthdayShow) {
     embed.addFields(
-      { name: schedule?.isBirthdayShow ? "Birthday" : " ", value: schedule.birthdayMember?.stage_name ?? " ", inline: true });
+      { name: schedule?.isBirthdayShow ? "Birthday" : " ", value: `🎂 ${schedule.birthdayMember?.stage_name}` ?? " ", inline: true });
   }
 
   if (schedule?.isGraduationShow) {
@@ -152,7 +159,7 @@ async function sendMessageTheaterInfo(scheduleId, type) {
 
   embed.addFields({ name: " ", value: `[Detail Theater](${url})` })
 
-  const message = `${getGreeting()} <@&1082078422097989843> jangan lupa hari ini ada show **${schedule?.setlist?.name}**, berikut info show theater lebih lanjut`;
+  const message = `${getGreeting()} jangan lupa hari ini ada show **${schedule?.setlist?.name}**, berikut info show theater lebih lanjut`;
 
   const customMessage = {
     username: 'JKT48 SHOWROOM BOT',

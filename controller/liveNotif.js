@@ -63,28 +63,39 @@ async function sendMobileFirebaseNotif(data) {
     }
 
     const payload = {
-      to: "/topics/showroom",
+      topic: "showroom",
       notification: {
         title: "JKT48 SHOWROOM",
         body: body,
-        mutable_content: true,
-        sound: "Tri-tone",
-        icon: "https://res.cloudinary.com/dkkagbzl4/image/upload/v1715448389/ioc8l1puv69qn7nzc2e9.png",
-        image: image
+        image: image, // This is allowed
       },
       data: {
         name: name,
         type: isPremiumLive ? "Premium Live" : "Showroom",
         screen: isPremiumLive ? "PremiumLive" : "LiveStream",
-        room_id: data.room_id,
-        theater: {
+        room_id: data.room_id.toString(),
+        theater: JSON.stringify({
           setlist: {
             name: todayShow?.setlist?.name
           }
+        }), // Serialize nested objects
+        profile: JSON.stringify(data) // Serialize nested objects
+      },
+      android: {
+        notification: {
+          sound: "Tri-tone",
+          icon: "https://res.cloudinary.com/dkkagbzl4/image/upload/v1715448389/ioc8l1puv69qn7nzc2e9.png",
         },
-        profile: data
+      },
+      "apns": {
+        "payload": {
+          "aps": {
+            "category" : "Showroom"
+          }
+        }
       }
     };
+    
 
     sendNotifMobile(payload)
 
@@ -110,7 +121,7 @@ async function sendWebhookNotification(data, liveTime) {
       title = `${name} live show theater Premium Live!`;
       image = todayShow?.setlist?.image;
     } else {
-      name = data.room_url_key.replace("JKT48_", "") + " JKT48";
+      name = data.room_url_key === "shani_indira" ? "Ci Shani JOT48" :  data.room_url_key.replace("JKT48_", "");;
       title = `${name} lagi live showroom nih!`;
       image = data.image?.replace("_s.jpeg", "_l.jpeg");
     }
@@ -222,8 +233,8 @@ async function getLiveInfo(rooms) {
         );
       } else {
         // send notification discord and insert the live id into the database
-        sendMobileFirebaseNotif(member);
         sendWebhookNotification(member, liveTime);
+        sendMobileFirebaseNotif(member);
 
         await collection.insertOne({
           roomId: member.room_id ?? member.id,

@@ -45,26 +45,35 @@ async function sendScheduleNotifAndroid(schedule, isUpdateLineup) {
   }
 
   const payload = {
-    to: "/topics/showroom",
+    topic: "showroom",
     notification: {
-      title: title,
+      title: "JKT48 SHOWROOM",
       body: messageBody,
-      mutable_content: true,
-      sound: "Tri-tone",
-      icon: "https://res.cloudinary.com/dkkagbzl4/image/upload/v1715448389/ioc8l1puv69qn7nzc2e9.png",
       image: schedule?.setlist?.image,
     },
+    android: {
+      notification: {
+        sound: "Tri-tone",
+        icon: "https://res.cloudinary.com/dkkagbzl4/image/upload/v1715448389/ioc8l1puv69qn7nzc2e9.png",
+      },
+    },
     data: {
-      name: schedule?.setlist?.name,
+      name: schedule?.setlist?.name || "",
       type: "Schedule",
-      image: schedule?.setlist?.image,
+      image: schedule?.setlist?.image || "",
       screen: "ScheduleDetail",
-      schedule_id: schedule._id,
-      setlist: {
-        name: schedule?.setlist?.name,
+      schedule_id: schedule._id?.toString() || "",
+      setlist_name: schedule?.setlist?.name || "", // ✅ Flattened key
+    },
+    apns: {
+      payload: {
+        aps: {
+          category: "Showroom",
+        },
       },
     },
   };
+  
   
   try {
     sendNotifMobile(payload);
@@ -113,8 +122,8 @@ async function getNotifTheaterSchedule(image, isUpdateLineup = false) {
     const greeting = getGreeting(); // Assuming you have getGreeting() defined somewhere
 
     let message = isComingSoon
-      ? `${greeting} <@&1082078422097989843>, berikut jadwal show theater minggu ini`
-      : `${greeting} <@&1082078422097989843>, berikut jadwal show theater dan lineup member minggu ini`;
+      ? `${greeting}, berikut jadwal show theater minggu ini`
+      : `${greeting}, berikut jadwal show theater dan lineup member minggu ini`;
 
     theaterSchedule
       .filter((schedule) => schedule.isOnWeekSchedule)

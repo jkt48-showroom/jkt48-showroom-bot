@@ -87,24 +87,51 @@ const webhookClient = new Discord.WebhookClient({
 
 async function sendMobileFirebaseNotif(data) {
   try {
-    const memberName = data.user.name === "jkt48-official" ? data.user.name : data.user.name.replace("JKT48", "");
+    const memberName = data.user.name === "JKT48" ? data.user.name : data.user.name.replace("JKT48", "");
+
+    const excludedTitles = [
+      "Sambil Menggandeng Erat Tangan",
+      "Ingin Bertemu",
+      "Pajama Drive",
+      "Cara Meminum Ramune",
+      "Aturan Anti Cinta"
+    ];
+
+    // Check if data.title includes any of the excluded titles
+    if (excludedTitles.some(title => data?.title?.includes(title))) {
+      return console.log(red(`Notification skipped for idn premium live`));
+    }
 
     const payload = {
-      to: "/topics/showroom",
+      topic: "showroom",
       notification: {
         title: `IDN Live: ${data.title}`,
         body: `${memberName} lagi IDN Live nih`,
-        mutable_content: true,
-        sound: "Tri-tone",
-        icon: "https://res.cloudinary.com/dkkagbzl4/image/upload/v1715448389/ioc8l1puv69qn7nzc2e9.png",
-        image: data.image
+        image: data.image,
       },
       data: {
-        name: memberName,
+        name: data.user.name,
         type: "IDN",
-        profile: data,
-        screen: "IDNStream"
-      }
+        profile: JSON.stringify(data),
+        screen: "IDNStream",
+      },
+      android: {
+        notification: {
+          sound: "Tri-tone",
+          icon: "https://res.cloudinary.com/dkkagbzl4/image/upload/v1715448389/ioc8l1puv69qn7nzc2e9.png",
+        },
+      },
+      apns: {
+        payload: {
+          aps: {
+            sound: "Tri-tone",
+            mutableContent: 1, 
+          },
+        },
+        fcm_options: {
+          image: data.image,
+        },
+      },
     };
 
     sendNotifMobile(payload)
@@ -178,8 +205,8 @@ async function getLiveInfo(rooms) {
         );
       } else {
         // send notification discord and insert the live id into the database
-        sendMobileFirebaseNotif(member);
         sendWebhookNotification(member);
+        sendMobileFirebaseNotif(member);
         await collection.insertOne({
           room_id: member.user.id,
           live_id: member.slug,
