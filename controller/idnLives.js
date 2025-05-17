@@ -66,6 +66,15 @@ let idnUsernames = [
   "jkt48_ribka",
   "jkt48_nala",
   "jkt48_kimmy",
+  "jkt48_virgi",
+  "jkt48_auwia",
+  "jkt48_rilly",
+  "jkt48_giaa",
+  "jkt48_maira",
+  "jkt48_ekin",
+  "jkt48_jemima",
+  "jkt48_mikaela",
+  "jkt48_intan",
 ];
 
 const client = new MongoClient(process.env.MONGO_DB,
@@ -94,7 +103,14 @@ async function sendMobileFirebaseNotif(data) {
       "Ingin Bertemu",
       "Pajama Drive",
       "Cara Meminum Ramune",
-      "Aturan Anti Cinta"
+      "Aturan Anti Cinta",
+      "JKT48 SCHOOL",
+      "FAMILY 48",
+      "THE BATTLE: DANCING QUEEN",
+      "THE BATTLE: VOCAL QUEEN",
+      "CATUR ASTA",
+      "QUIT GAME",
+      "SELEKSI PMDK 2025",
     ];
 
     // Check if data.title includes any of the excluded titles
@@ -125,7 +141,7 @@ async function sendMobileFirebaseNotif(data) {
         payload: {
           aps: {
             sound: "Tri-tone",
-            mutableContent: 1, 
+            mutableContent: 1,
           },
         },
         fcm_options: {
@@ -136,7 +152,7 @@ async function sendMobileFirebaseNotif(data) {
 
     sendNotifMobile(payload)
 
-    return console.log(green(`Sending mobile IDN notif ${memberName} success`)); 
+    return console.log(green(`Sending mobile IDN notif ${memberName} success`));
   } catch (error) {
     console.log(error)
     console.log(red(`Send mobile IDN notif failed`))

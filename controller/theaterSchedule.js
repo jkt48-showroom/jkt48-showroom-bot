@@ -30,10 +30,10 @@ const getGreeting = () => {
 };
 
 async function sendScheduleNotifAndroid(schedule, isUpdateLineup) {
-  const showDate = moment(schedule?.showDate).locale("id").format("dddd DD MMM");
+  const showDate = moment(schedule?.showDate).format("dddd, DD MMMM HH:mm").locale("id");
 
   let title = "JKT48 SHOWROOM";
-  let messageBody = `Jadwal show ${schedule?.setlist?.name} - ${showDate}`;
+  let messageBody = `Jadwal show baru ${showDate}`;
 
   if (isUpdateLineup) {
     title = `${schedule?.setlist?.name} - ${showDate}`;
@@ -47,7 +47,7 @@ async function sendScheduleNotifAndroid(schedule, isUpdateLineup) {
   const payload = {
     topic: "showroom",
     notification: {
-      title: "JKT48 SHOWROOM",
+      title: schedule?.setlist?.name,
       body: messageBody,
       image: schedule?.setlist?.image,
     },
@@ -57,21 +57,13 @@ async function sendScheduleNotifAndroid(schedule, isUpdateLineup) {
         icon: "https://res.cloudinary.com/dkkagbzl4/image/upload/v1715448389/ioc8l1puv69qn7nzc2e9.png",
       },
     },
-    data: {
-      name: schedule?.setlist?.name || "",
-      type: "Schedule",
-      image: schedule?.setlist?.image || "",
-      screen: "ScheduleDetail",
-      schedule_id: schedule._id?.toString() || "",
-      setlist_name: schedule?.setlist?.name || "", // ✅ Flattened key
-    },
-    apns: {
-      payload: {
-        aps: {
-          category: "Showroom",
-        },
-      },
-    },
+    "apns": {
+        "payload": {
+          "aps": {
+            "category" : "Showroom"
+          }
+        }
+      }
   };
   
   

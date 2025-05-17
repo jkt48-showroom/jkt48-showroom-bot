@@ -1,4 +1,5 @@
 const axios = require("axios");
+const { blueBright } = require("colorette");
 const cron = require("node-cron");
 
 async function getTodayTheaterSchedule() {
@@ -56,13 +57,36 @@ const TodaySchedule = {
           console.log(blueBright("Today schedule sent to discord"));
         }
       });
+
+      const headers = {
+        headers: {
+          Authorization: `Bearer ${process.env.MESSAGE_BOT_TOKEN}`
+        }
+      }
+
+      // Auto Input Schedules Every sunday and monday at 11 pm
+      cron.schedule("00 23 * * 0,1", async () => {
+        await axios.get(`${process.env.SHOWROOM_ADMIN_WEB}/schedules/auto-schedules`, {
+          headers
+        })
+          .then((res) => {
+            console.log(blueBright("Theater Schedules Created"));
+          })
+          .catch((error) => {
+            console.error("Error creating schedules:", error);
+          });
+      });
+
+
       res.send({
         message: "Today Schedule running",
       });
-     
+
     } catch (error) {
       console.log(error);
-      res.status(500).send("Error sending live notification");
+      res.status(500).send({
+        message: "Job Today Schedule already running",
+      });
     }
   }
 };
