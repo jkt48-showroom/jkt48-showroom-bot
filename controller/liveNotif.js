@@ -191,8 +191,16 @@ async function getMemberLiveData() {
   let roomLives = [];
 
   const response = await axios.get(
-    "https://www.showroom-live.com/api/live/onlives"
+    "https://www.showroom-live.com/api/live/onlives",
+    {
+      headers: {
+        "Accept": "*/*",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+        "Connection": "keep-alive",
+      },
+    }
   );
+  
   const data = response.data.onlives;
 
   // Find Member Live
@@ -299,8 +307,10 @@ const DiscordApi = {
         console.log(redBright("No one member lives"));
       }
     } catch (error) {
-      console.log(error);
-      res.status(500).send("Error sending live notification");
+      console.log(error.response);
+      res.status(500).send({
+        message: "Error sending live notification"
+      });
     }
   }
 };

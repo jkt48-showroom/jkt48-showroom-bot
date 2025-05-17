@@ -66,6 +66,15 @@ let idnUsernames = [
   "jkt48_ribka",
   "jkt48_nala",
   "jkt48_kimmy",
+  "jkt48_virgi",
+  "jkt48_auwia",
+  "jkt48_rilly",
+  "jkt48_giaa",
+  "jkt48_maira",
+  "jkt48_ekin",
+  "jkt48_jemima",
+  "jkt48_mikaela",
+  "jkt48_intan",
 ];
 
 const client = new MongoClient(process.env.MONGO_DB,
@@ -240,13 +249,38 @@ function getScheduledJobTime() {
   return console.log(bgCyanBright(`Live Job Running at ${formattedDate}`));
 }
 
+const query = `
+  query GetLivestreams {
+    getLivestreams {
+      slug
+      title
+      image_url
+      view_count
+      playback_url
+      room_identifier
+      status
+      live_at
+      end_at
+      scheduled_at
+      gift_icon_url
+      live_type
+      creator {
+        uuid
+        username
+        name
+        avatar
+      }
+    }
+  }
+`;
+
+
 const getIDNLives = async (req, res) => {
   try {
     const response = await axios.post(
       "https://api.idn.app/graphql",
       {
-        query:
-          'query SearchLivestream { searchLivestream(query: "", limit: 100) { next_cursor result { slug title image_url view_count playback_url room_identifier status live_at end_at scheduled_at gift_icon_url category { name slug } creator { uuid username name avatar bio_description following_count follower_count is_follow } } }}',
+        query: query
       },
       {
         headers: {
@@ -254,7 +288,8 @@ const getIDNLives = async (req, res) => {
         },
       }
     );
-    const data = response.data?.data.searchLivestream?.result;
+    const data = response.data?.data.getLivestreams;
+    console.log("idn stream list", response?.data)
     if (data?.length) {
       const result = data.filter((i) => {
         return idnUsernames.includes(i.creator?.username || "0");
