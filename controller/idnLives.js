@@ -2,8 +2,9 @@ const axios = require("axios");
 const { MongoClient } = require("mongodb");
 const { bgCyanBright, redBright, green, red } = require("colorette");
 const Discord = require("discord.js");
-const moment = require('moment-timezone');
+const moment = require("moment-timezone");
 const sendNotifMobile = require("../utils/sendNotifMobile");
+const cron = require("node-cron");
 require("dotenv").config();
 
 let idnUsernames = [
@@ -77,12 +78,10 @@ let idnUsernames = [
   "jkt48_intan",
 ];
 
-const client = new MongoClient(process.env.MONGO_DB,
-  {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  }
-);
+const client = new MongoClient(process.env.MONGO_DB, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
 
 // Define a model for liveIds
 const db = client.db("showroom");
@@ -96,18 +95,21 @@ const webhookClient = new Discord.WebhookClient({
 
 async function sendMobileFirebaseNotif(data) {
   try {
-    const memberName = data.user.name === "JKT48" ? data.user.name : data.user.name.replace("JKT48", "");
+    const memberName =
+      data.user.name === "JKT48"
+        ? data.user.name
+        : data.user.name.replace("JKT48", "");
 
     const excludedTitles = [
       "Sambil Menggandeng Erat Tangan",
       "Ingin Bertemu",
       "Pajama Drive",
       "Cara Meminum Ramune",
-      "Aturan Anti Cinta"
+      "Aturan Anti Cinta",
     ];
 
     // Check if data.title includes any of the excluded titles
-    if (excludedTitles.some(title => data?.title?.includes(title))) {
+    if (excludedTitles.some((title) => data?.title?.includes(title))) {
       return console.log(red(`Notification skipped for idn premium live`));
     }
 
@@ -134,7 +136,7 @@ async function sendMobileFirebaseNotif(data) {
         payload: {
           aps: {
             sound: "Tri-tone",
-            mutableContent: 1, 
+            mutableContent: 1,
           },
         },
         fcm_options: {
@@ -143,12 +145,12 @@ async function sendMobileFirebaseNotif(data) {
       },
     };
 
-    sendNotifMobile(payload)
+    sendNotifMobile(payload);
 
-    return console.log(green(`Sending mobile IDN notif ${memberName} success`)); 
+    return console.log(green(`Sending mobile IDN notif ${memberName} success`));
   } catch (error) {
-    console.log(error)
-    console.log(red(`Send mobile IDN notif failed`))
+    console.log(error);
+    console.log(red(`Send mobile IDN notif failed`));
   }
 }
 
@@ -167,7 +169,13 @@ async function sendWebhookNotification(data) {
     description.addFields(
       {
         name: "Start:",
-        value: "⏰ " + moment.utc(data.live_at).tz('Asia/Jakarta').locale('id').format('dddd, DD MMMM HH:mm'),
+        value:
+          "⏰ " +
+          moment
+            .utc(data.live_at)
+            .tz("Asia/Jakarta")
+            .locale("id")
+            .format("dddd, DD MMMM HH:mm"),
       },
       {
         name: "Title",
@@ -274,13 +282,12 @@ const query = `
   }
 `;
 
-
 const getIDNLives = async (req, res) => {
   try {
     const response = await axios.post(
       "https://api.idn.app/graphql",
       {
-        query: query
+        query: query,
       },
       {
         headers: {
@@ -289,7 +296,7 @@ const getIDNLives = async (req, res) => {
       }
     );
     const data = response.data?.data.getLivestreams;
-    console.log("idn stream list", response?.data)
+    console.log("idn stream list", response?.data);
     if (data?.length) {
       const result = data.filter((i) => {
         return idnUsernames.includes(i.creator?.username || "0");
@@ -346,4 +353,43 @@ const IDNLiveNotif = {
   },
 };
 
-module.exports = IDNLiveNotif;
+const IDNScheduleApi = {
+  getLiveNotification: async (req, res) => {
+    let cronJob;
+
+    try {
+      // Clear previous cron job if it exists
+      if (cronJob) {
+        cronJob?.destroy();
+      }
+
+      const roomLives = await getIDNLives();
+
+      // Set up new cron job
+      cronJob = cron.schedule("*/30 * * * * *", async () => {
+        await IDNLiveNotif.sendDiscordNotif();
+      });
+
+      if (roomLives?.length > 0) {
+        const roomNameData = roomLives.map((member) => member?.user?.name);
+
+        res.send({
+          message: "IDN Live notification sent!",
+          data: roomNameData,
+        });
+      } else {
+        res.send({
+          message: "No one member IDN lives",
+        });
+        console.log(redBright("No one member IDN lives"));
+      }
+    } catch (error) {
+      console.log(error);
+      res.status(500).send({
+        message: "Error sending live notification",
+      });
+    }
+  },
+};
+
+module.exports = IDNScheduleApi;
