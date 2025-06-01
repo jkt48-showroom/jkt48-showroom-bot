@@ -10,7 +10,6 @@ const {
   blueBright,
   red
 } = require("colorette");
-const IDNLiveNotif = require("./idnLives");
 require("dotenv").config();
 const moment = require("moment-timezone");
 const sendNotifMobile = require("../utils/sendNotifMobile");
@@ -288,7 +287,6 @@ const DiscordApi = {
       cronJob = cron.schedule("*/30 * * * * *", async () => {
         const roomLives = await getMemberLiveData();
         await getLiveInfo(roomLives);
-        await IDNLiveNotif.sendDiscordNotif();
         getScheduledJobTime();
       });
 
