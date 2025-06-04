@@ -56,7 +56,7 @@ async function sendMobileFirebaseNotif(data) {
       body = `${name} live show ${todayShow?.setlist?.name} Premium Live!`;
       image = todayShow?.setlist?.image;
     } else {
-      name = data.room_url_key === "shani_indira" ? "Ci Shani JOT48" :  data.room_url_key.replace("JKT48_", "");
+      name = data.room_url_key === "shani_indira" ? "Ci Shani JOT48" : data.room_url_key.replace("JKT48_", "");
       body = `${name} lagi live showroom nih!`;
       image = data.image?.replace("_s.jpeg", "_l.jpeg");
     }
@@ -89,12 +89,12 @@ async function sendMobileFirebaseNotif(data) {
       "apns": {
         "payload": {
           "aps": {
-            "category" : "Showroom"
+            "category": "Showroom"
           }
         }
       }
     };
-    
+
 
     sendNotifMobile(payload)
 
@@ -120,7 +120,7 @@ async function sendWebhookNotification(data, liveTime) {
       title = `${name} live show theater Premium Live!`;
       image = todayShow?.setlist?.image;
     } else {
-      name = data.room_url_key === "shani_indira" ? "Ci Shani JOT48" :  data.room_url_key.replace("JKT48_", "");;
+      name = data.room_url_key === "shani_indira" ? "Ci Shani JOT48" : data.room_url_key.replace("JKT48_", "");;
       title = `${name} lagi live showroom nih!`;
       image = data.image?.replace("_s.jpeg", "_l.jpeg");
     }
@@ -187,10 +187,9 @@ async function sendWebhookNotification(data, liveTime) {
 
 async function getMemberLiveData() {
   let onLive = [];
-  let roomLives = [];
 
   const response = await axios.get(
-    "https://www.showroom-live.com/api/live/onlives",
+    "https://www.showroom-live.com/api/home/contents/1",
     {
       headers: {
         "Accept": "*/*",
@@ -199,26 +198,15 @@ async function getMemberLiveData() {
       },
     }
   );
-  
-  const data = response.data.onlives;
 
-  // Find Member Live
-  for (let i = 0; i < data.length; i++) {
-    const index = data[i];
-    onLive.push(index);
-  }
+  const data = await response.data;
+  const roomLives = data.contents.filter((item) => item?.title === "AKB48Group")
+  const memberLive = roomLives[0]?.lives
+  const members = memberLive.filter((item) =>
+    item?.room_url_key?.includes("JKT48")
+  );
 
-  // Store member lives data
-  if (onLive.length) {
-    const roomLive = data[0].lives;
-    roomLive.forEach((item) => {
-      if (item.room_url_key.includes("JKT48") || item.room_url_key.includes("shani_indira")) {
-        roomLives.push(item);
-      }
-    });
-  }
-
-  return roomLives;
+  return members;
 }
 
 async function getLiveInfo(rooms) {
@@ -231,7 +219,7 @@ async function getLiveInfo(rooms) {
     const liveIds = liveDatabase.map((obj) => obj.live_id);
     const indoDate = moment.unix(liveTime).tz('Asia/Jakarta').format('YYYY-MM-DD HH:mm:ss');
 
-    name = member.room_url_key === "shani_indira" ? "Shani JOT48"  : member.room_url_key.replace("JKT48_", "") + " JKT48";
+    name = member.room_url_key === "shani_indira" ? "Shani JOT48" : member.room_url_key.replace("JKT48_", "") + " JKT48";
 
     if (rooms.length) {
       if (liveIds.includes(liveId)) {
@@ -282,7 +270,7 @@ const DiscordApi = {
         cronJob?.destroy();
       }
       const roomLives = await getMemberLiveData();
-      
+
       // Set up new cron job
       cronJob = cron.schedule("*/30 * * * * *", async () => {
         const roomLives = await getMemberLiveData();
