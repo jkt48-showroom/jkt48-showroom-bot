@@ -66,12 +66,13 @@ async function sendMobileFirebaseNotif(data) {
       notification: {
         title: "JKT48 SHOWROOM",
         body: body,
-        image: image, // This is allowed
+        image: image,
       },
       data: {
         name: name,
         type: isPremiumLive ? "Premium Live" : "Showroom",
         screen: isPremiumLive ? "PremiumLive" : "LiveStream",
+        image: image,
         room_id: data.room_id.toString(),
         theater: JSON.stringify({
           setlist: {
