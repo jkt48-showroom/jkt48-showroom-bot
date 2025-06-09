@@ -123,9 +123,11 @@ async function sendMobileFirebaseNotif(data) {
       data: {
         name: data.user.name,
         type: "IDN",
-        image: data?.image,
+        image: data?.user?.avatar ?? data?.image,
+        slug: data?.slug,
         chat_room_id: data?.chat_room_id,
         profile: JSON.stringify(data),
+        user: JSON.stringify(data?.user),
         screen: "IDNStream",
       },
       android: {

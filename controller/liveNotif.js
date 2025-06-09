@@ -73,7 +73,10 @@ async function sendMobileFirebaseNotif(data) {
         type: isPremiumLive ? "Premium Live" : "Showroom",
         screen: isPremiumLive ? "PremiumLive" : "LiveStream",
         image: data?.image_square,
-        room_id: data.room_id.toString(),
+        room_id: data?.room_id?.toString(),
+        room_url_key: data?.room_url_key,
+        view_num: data?.view_num, 
+        live_id: data?.live_id,
         theater: JSON.stringify({
           setlist: {
             name: todayShow?.setlist?.name
