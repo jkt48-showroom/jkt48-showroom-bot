@@ -195,7 +195,12 @@ async function sendWebhookNotification(data) {
         name: "Watch on IDN Live:",
         value: `[Here](https://www.idn.app/${data.user.username}/live/${data.slug})`,
         inline: true,
-      }
+      },
+      {
+        name: "Watch on JKT48 Showroom Mobile:",
+        value: `[Here](https://play.google.com/store/apps/details?id=com.inzoid.jkt48showroom)`,
+        inline: false
+      },
     );
 
     webhookClient.send({
@@ -300,7 +305,6 @@ const getIDNLives = async (req, res) => {
       }
     );
     const data = response.data?.data.getLivestreams;
-    console.log("idn stream list", response?.data);
     if (data?.length) {
       const result = data.filter((i) => {
         return idnUsernames.includes(i.creator?.username || "0");

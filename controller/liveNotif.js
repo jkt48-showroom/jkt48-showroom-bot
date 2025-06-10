@@ -75,8 +75,8 @@ async function sendMobileFirebaseNotif(data) {
         image: data?.image_square,
         room_id: data?.room_id?.toString(),
         room_url_key: data?.room_url_key,
-        view_num: data?.view_num, 
-        live_id: data?.live_id,
+        view_num: data?.view_num.toString(), 
+        live_id: data?.live_id.toString(),
         theater: JSON.stringify({
           setlist: {
             name: todayShow?.setlist?.name
@@ -168,7 +168,12 @@ async function sendWebhookNotification(data, liveTime) {
         name: "Watch on Showroom:",
         value: `[Here](https://www.showroom-live.com/r/${data.room_url_key})`,
         inline: true
-      }
+      },
+      {
+        name: "Watch on JKT48 Showroom Mobile:",
+        value: `[Here](https://play.google.com/store/apps/details?id=com.inzoid.jkt48showroom)`,
+        inline: false
+      },
     );
 
     if (data.party_live_status === 1) {
