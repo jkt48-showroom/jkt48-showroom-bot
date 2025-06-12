@@ -208,21 +208,12 @@ async function getMemberLiveData() {
     }
   );
 
-  // Find Member Live
-  for (let i = 0; i < data.length; i++) {
-    const index = data[i];
-    onLive.push(index);
-  }
-
-  // Store member lives data
-  if (onLive.length) {
-    const roomLive = data[0].lives;
-    roomLive.forEach((item) => {
-      if (item.room_url_key.includes("JKT48")) {
-        roomLives.push(item);
-      }
-    });
-  }
+  const data = await response.data;
+  const roomLives = data.contents.filter((item) => item?.title === "AKB48Group")
+  const memberLive = roomLives[0]?.lives
+  const members = memberLive.filter((item) =>
+    item?.room_url_key?.includes("JKT48")
+  );
 
   return members;
 }
