@@ -86,27 +86,42 @@ const getGreeting = () => {
 
 async function sendScheduleNotifAndroid(schedule) {
   const payload = {
-    to: "/topics/showroom",
+    topic: "showroom",
     notification: {
       title: "Jadwal Theater",
-      body: `Hari ini ada show ${schedule?.setlist?.name} jam ${schedule.showTime} WIB`,
-      mutable_content: true,
-      sound: "Tri-tone",
-      icon: "https://res.cloudinary.com/dkkagbzl4/image/upload/v1715448389/ioc8l1puv69qn7nzc2e9.png",
-      image: schedule?.setlist?.image,
+      body: `Hari ini ada show ${schedule?.setlist?.name} jam ${schedule?.showTime} WIB`,
+      image: schedule?.setlist?.image || "",
     },
     data: {
-      name: schedule?.setlist?.name,
+      name: schedule?.setlist?.name || "",
       type: "Schedule",
-      image: schedule?.setlist?.image,
       screen: "ScheduleDetail",
-      schedule_id: schedule._id,
-      setlist: {
-        name: schedule?.setlist?.name,
+      image: schedule?.setlist?.image || "",
+      schedule_id: String(schedule?._id || ""),
+      show_time: String(schedule?.showTime || ""),
+      setlist_name: schedule?.setlist?.name || "",
+      setlist_image: schedule?.setlist?.image || "",
+      theater: JSON.stringify({
+        setlist: {
+          name: schedule?.setlist?.name || "",
+        },
+      }),
+      schedule: JSON.stringify(schedule), // Optional full schedule if needed
+    },
+    android: {
+      notification: {
+        sound: "Tri-tone",
+        icon: "https://res.cloudinary.com/dkkagbzl4/image/upload/v1715448389/ioc8l1puv69qn7nzc2e9.png",
+      },
+    },
+    apns: {
+      payload: {
+        aps: {
+          category: "Theater",
+        },
       },
     },
   };
-
 
   sendNotifMobile(payload);
 }
