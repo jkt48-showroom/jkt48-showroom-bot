@@ -98,7 +98,7 @@ async function sendScheduleNotifAndroid(schedule) {
       screen: "ScheduleDetail",
       image: schedule?.setlist?.image || "",
       schedule_id: schedule?._id?.toString(),
-      setlist: JSON.stringify(data?.setlist),
+      setlist: JSON.stringify(schedule?.setlist),
     },
     android: {
       notification: {
