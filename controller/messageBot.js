@@ -98,15 +98,6 @@ async function sendScheduleNotifAndroid(schedule) {
       screen: "ScheduleDetail",
       image: schedule?.setlist?.image || "",
       schedule_id: String(schedule?._id || ""),
-      show_time: String(schedule?.showTime || ""),
-      setlist_name: schedule?.setlist?.name || "",
-      setlist_image: schedule?.setlist?.image || "",
-      theater: JSON.stringify({
-        setlist: {
-          name: schedule?.setlist?.name || "",
-        },
-      }),
-      schedule: JSON.stringify(schedule), // Optional full schedule if needed
     },
     android: {
       notification: {
