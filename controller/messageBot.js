@@ -89,7 +89,7 @@ async function sendScheduleNotifAndroid(schedule) {
     topic: "showroom",
     notification: {
       title: "Jadwal Theater",
-      body: `Hari ini ada show ${schedule?.setlist?.name} jam ${schedule?.showTime} WIB`,
+      body: `Hari ini ada show ${schedule?.setlist?.name} jam ${schedule?.showTime} WIB, jangan lupa nonton`,
       image: schedule?.setlist?.image || "",
     },
     data: {
@@ -97,7 +97,8 @@ async function sendScheduleNotifAndroid(schedule) {
       type: "Schedule",
       screen: "ScheduleDetail",
       image: schedule?.setlist?.image || "",
-      schedule_id: String(schedule?._id || ""),
+      schedule_id: schedule?._id?.toString(),
+      setlist: JSON.stringify(data?.setlist),
     },
     android: {
       notification: {
