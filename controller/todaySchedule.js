@@ -39,6 +39,30 @@ async function sendTodaySchedule() {
   }
 }
 
+async function createTheaterSchedule() {
+  try {
+    await axios.get(
+      `${process.env.SHOWROOM_ADMIN_WEB}/schedules/auto-schedules`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.MESSAGE_BOT_TOKEN}`
+        }
+      }
+    );
+  } catch (error) {
+    console.log("error create weekly theater", error);
+  } finally {
+    await axios.get(
+      `${process.env.SHOWROOM_ADMIN_WEB}/schedules/update-lineup-schedule`,
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.MESSAGE_BOT_TOKEN}`
+        }
+      }
+    );
+  }
+}
+
 let cronJob;
 
 const TodaySchedule = {
@@ -47,6 +71,14 @@ const TodaySchedule = {
       if (cronJob) {
         cronJob?.destroy();
       }
+
+      const cronJob = cron.schedule("0 7 * * *", async () => {
+        try {
+          await createTheaterSchedule();
+        } catch (error) {
+          console.log("❌ Failed to create theater schedule:", error);
+        }
+      });
 
       cronJob = cron.schedule("30 12 * * *", async () => {
         const todaySchedule = await getTodayTheaterSchedule();
@@ -59,7 +91,7 @@ const TodaySchedule = {
       res.send({
         message: "Today Schedule running",
       });
-     
+
     } catch (error) {
       console.log(error);
       res.status(500).send("Error sending live notification");
