@@ -63,16 +63,18 @@ async function createTheaterSchedule() {
   }
 }
 
-let cronJob;
 
 const TodaySchedule = {
   runTodayScehduleJob: async (req, res) => {
+    let cronJob;
+
     try {
       if (cronJob) {
         cronJob?.destroy();
       }
+      await createTheaterSchedule();
 
-      const cronJob = cron.schedule("0 7 * * *", async () => {
+      cronJob = cron.schedule("0 7 * * *", async () => {
         try {
           await createTheaterSchedule();
         } catch (error) {
